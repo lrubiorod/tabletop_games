@@ -1,6 +1,6 @@
-use crate::main_code::core::components::{
-    component::{BaseComponent, Component},
-    component_type::ComponentType,
+use crate::main_code::core::{
+    components::component::{BaseComponent, Component},
+    core_constants::ComponentType,
 };
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]

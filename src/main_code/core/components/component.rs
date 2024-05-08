@@ -1,4 +1,4 @@
-use crate::main_code::core::components::component_type::ComponentType;
+use crate::main_code::core::core_constants::ComponentType;
 use std::{
     fmt,
     fmt::Formatter,
