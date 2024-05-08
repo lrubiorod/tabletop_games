@@ -9,12 +9,8 @@ use std::{
 // Atomic counter for unique component IDs
 static GLOBAL_ID: AtomicUsize = AtomicUsize::new(0);
 
-pub trait Component {}
-
-impl Component for BaseComponent {}
-
 #[derive(Debug, Clone)]
-pub struct BaseComponent {
+pub struct Component {
     // Unique ID for this component
     component_id: usize,
     // Type of this component
@@ -25,7 +21,7 @@ pub struct BaseComponent {
     component_name: String,
 }
 
-impl BaseComponent {
+impl Component {
     // Constructor that takes only the type (default name will be the type's string representation)
     pub fn new(component_type: ComponentType) -> Self {
         Self {
@@ -94,28 +90,28 @@ impl BaseComponent {
         self.component_name = name;
     }
 
-    pub fn copy_component_to(&self, mut copy_to: BaseComponent) {
+    pub fn copy_component_to(&self, mut copy_to: Component) {
         copy_to.owner_id = self.owner_id;
         copy_to.component_name = self.component_name.clone();
     }
 }
 
-impl Hash for BaseComponent {
+impl Hash for Component {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.component_id.hash(state);
     }
 }
 
-impl fmt::Display for BaseComponent {
+impl fmt::Display for Component {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.component_type)
     }
 }
 
-impl PartialEq for BaseComponent {
+impl PartialEq for Component {
     fn eq(&self, other: &Self) -> bool {
         self.component_id == other.component_id
     }
 }
 
-impl Eq for BaseComponent {}
+impl Eq for Component {}
