@@ -1,4 +1,4 @@
-use crate::main_code::core::{components::component::Component, core_constants::VisibilityMode};
+use crate::main_code::core::core_constants::VisibilityMode;
 
 /// A trait to be used on any Component that contains other Components.
 /// The trait is 'read-only', and deliberately avoids specifying add/remove type methods.
@@ -9,7 +9,7 @@ use crate::main_code::core::{components::component::Component, core_constants::V
 /// iii) As a holder of useful stream-related default methods - these are all read-only methods.
 pub trait ComponentContainer<Component> {
     /// Returns a vector of all the Components in the Container
-    fn get_components(&self) -> &Vec<Component>;
+    fn get_components(&self) -> Vec<&Component>;
 
     /// Returns the visibility mode of the Container
     fn get_visibility_mode(&self) -> VisibilityMode;

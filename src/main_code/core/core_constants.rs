@@ -1,8 +1,7 @@
-use crate::main_code::core::components::area::Area;
-use crate::main_code::core::components::token::Token;
+use crate::main_code::core::components::{area::Area, token::Token};
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub enum ComponentType {
     Area(Area),
     Token(Token),
@@ -25,7 +24,7 @@ impl Display for ComponentType {
  * will need to implement more sophisticated logic. This is done for example in PartialObservableDeck - and
  * this should cover almost all future eventualities.
  */
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub enum VisibilityMode {
     VisibleToAll,
     HiddenToAll,

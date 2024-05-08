@@ -1,4 +1,6 @@
-use crate::main_code::core::core_constants::ComponentType;
+use crate::main_code::core::{
+    core_constants::ComponentType, interfaces::component_container::ComponentContainer,
+};
 use std::{
     fmt,
     fmt::Formatter,
@@ -93,6 +95,13 @@ impl Component {
     pub fn copy_component_to(&self, mut copy_to: Component) {
         copy_to.owner_id = self.owner_id;
         copy_to.component_name = self.component_name.clone();
+    }
+
+    pub fn get_components(&self) -> Option<Vec<&Component>> {
+        match &self.component_type {
+            ComponentType::Area(area) => Some(area.get_components()),
+            _ => None,
+        }
     }
 }
 
