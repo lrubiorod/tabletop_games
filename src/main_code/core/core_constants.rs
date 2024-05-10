@@ -11,7 +11,7 @@ impl Display for ComponentType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let name = match self {
             ComponentType::Area(_) => "Area",
-            ComponentType::Token(_) => "Token",
+            ComponentType::Token(token) => token.token_type(),
         };
         write!(f, "{}", name)
     }
