@@ -1,7 +1,7 @@
 use crate::main_code::core::{
     components::component::{BaseComponent, Component},
     core_constants::{ComponentType, VisibilityMode},
-    interfaces::component_container::ComponentContainer,
+    interfaces::component_container::IComponentContainer,
 };
 use std::{
     collections::{HashMap, HashSet},
@@ -73,7 +73,7 @@ impl Component for Area {
     }
 }
 
-impl ComponentContainer for Area {
+impl IComponentContainer for Area {
     fn get_components(&self) -> Vec<Box<dyn Component>> {
         self.components.values().cloned().collect()
     }

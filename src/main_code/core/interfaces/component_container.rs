@@ -7,7 +7,7 @@ use crate::main_code::core::{components::component::Component, core_constants::V
 /// i) To be used to gather information about game states for game metrics and comparisons.
 /// ii) To indicate who can see the contents of the Container (Everyone, No-one, just the Owner).
 /// iii) As a holder of useful stream-related default methods - these are all read-only methods.
-pub trait ComponentContainer {
+pub trait IComponentContainer {
     /// Returns a vector of all the Components in the Container
     fn get_components(&self) -> Vec<Box<dyn Component>>;
 
