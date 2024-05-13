@@ -4,7 +4,7 @@ use crate::main_code::core::{
     interfaces::component_container::ComponentContainer,
 };
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     hash::{Hash, Hasher},
 };
 
@@ -41,8 +41,8 @@ impl Area {
         self.components.clone()
     }
 
-    pub fn nested_keys(&self) -> Vec<usize> {
-        self.components.keys().cloned().collect()
+    pub fn nested_keys(&self) -> HashSet<&usize> {
+        self.components.keys().collect()
     }
 
     pub fn get_component(&self, key: usize) -> Option<&Box<dyn Component>> {
@@ -93,16 +93,7 @@ impl Hash for Area {
 
 impl PartialEq for Area {
     fn eq(&self, other: &Self) -> bool {
-        if self.component_id() != other.component_id() {
-            return false;
-        }
-
-        let mut sorted_keys_self = self.nested_keys();
-        let mut sorted_keys_other = other.nested_keys();
-        sorted_keys_self.sort_unstable();
-        sorted_keys_other.sort_unstable();
-
-        sorted_keys_self == sorted_keys_other
+        self.component_id() == other.component_id() && self.nested_keys() == other.nested_keys()
     }
 }
 
@@ -112,6 +103,40 @@ impl Eq for Area {}
 mod tests {
     use super::*;
     use crate::main_code::core::components::token::Token;
+
+    #[test]
+    fn test_area_partial_eq() {
+        let c1 = Token::new_with_id("Meeple1", 1);
+        let c2 = Token::new_with_id("Meeple2", 2);
+        let c3 = Token::new_with_id("Meeple3", 3);
+        let mut a1 = Area::new_with_id(-1, 10);
+        a1.put_components(vec![
+            Box::new(c1.clone()),
+            Box::new(c2.clone()),
+            Box::new(c3.clone()),
+        ]);
+        assert_eq!(a1.get_size(), 3);
+
+        let mut a2 = Area::new_with_id(-1, 20);
+        a2.put_components(vec![
+            Box::new(c1.clone()),
+            Box::new(c2.clone()),
+            Box::new(c3.clone()),
+        ]);
+        assert_eq!(a2.get_size(), 3);
+
+        let mut a3 = Area::new_with_id(-1, 10);
+        a3.put_components(vec![Box::new(c1.clone()), Box::new(c2.clone())]);
+        assert_eq!(a3.get_size(), 2);
+
+        let mut a4 = Area::new_with_id(-1, 10);
+        a4.put_components(vec![Box::new(c1), Box::new(c2), Box::new(c3)]);
+        assert_eq!(a1.get_size(), 3);
+
+        assert_ne!(a1, a2);
+        assert_ne!(a1, a3);
+        assert_eq!(a1, a4);
+    }
 
     #[test]
     fn test_put_components_and_clear() {
