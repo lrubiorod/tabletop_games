@@ -1,5 +1,6 @@
 use crate::main_code::core::{
-    components::component::Component, core_constants::VisibilityMode,
+    components::component::{BaseComponent, Component},
+    core_constants::{ComponentType, VisibilityMode},
     interfaces::component_container::ComponentContainer,
 };
 use std::{
@@ -7,43 +8,74 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-#[derive(Debug, Default, PartialEq, Eq, Clone)]
+#[derive(Debug, Clone)]
 pub struct Area {
-    components: HashMap<usize, Component>,
+    base: BaseComponent,
+    components: HashMap<usize, Box<dyn Component>>,
 }
 
 impl Area {
+    pub fn new(owner: i32) -> Self {
+        let mut base = BaseComponent::new_with_name(ComponentType::Area, "");
+        base.set_owner_id(owner);
+        Self {
+            base,
+            components: HashMap::default(),
+        }
+    }
+
+    pub fn new_with_id(owner: i32, id: usize) -> Self {
+        let mut base = BaseComponent::new_with_name_and_id(ComponentType::Area, "", id);
+        base.set_owner_id(owner);
+        Self {
+            base,
+            components: HashMap::default(),
+        }
+    }
+
     pub fn clear(&mut self) {
         self.components.clear()
     }
 
-    pub fn components_map(&self) -> HashMap<usize, Component> {
+    pub fn components_map(&self) -> HashMap<usize, Box<dyn Component>> {
         self.components.clone()
     }
 
-    pub fn get_component(&self, key: usize) -> Option<&Component> {
+    pub fn nested_keys(&self) -> Vec<usize> {
+        self.components.keys().cloned().collect()
+    }
+
+    pub fn get_component(&self, key: usize) -> Option<&Box<dyn Component>> {
         self.components.get(&key)
     }
 
-    pub fn put_component(&mut self, c: Component) -> Option<Component> {
-        if let Some(nested_components) = c.get_components() {
-            for nc in nested_components {
-                self.components.insert(nc.component_id(), nc.clone());
-            }
+    pub fn put_component(&mut self, c: Box<dyn Component>) -> Option<Box<dyn Component>> {
+        for nc in c.nested_components() {
+            self.components.insert(nc.component_id(), nc.clone());
         }
         self.components.insert(c.component_id(), c)
     }
 
-    pub fn put_components(&mut self, components: Vec<Component>) {
+    pub fn put_components(&mut self, components: Vec<Box<dyn Component>>) {
         for c in components {
             self.put_component(c);
         }
     }
 }
 
-impl ComponentContainer<Component> for Area {
-    fn get_components(&self) -> Vec<&Component> {
-        self.components.values().collect()
+impl Component for Area {
+    fn component_id(&self) -> usize {
+        self.base.component_id()
+    }
+
+    fn nested_components(&self) -> Vec<Box<dyn Component>> {
+        self.get_components()
+    }
+}
+
+impl ComponentContainer for Area {
+    fn get_components(&self) -> Vec<Box<dyn Component>> {
+        self.components.values().cloned().collect()
     }
 
     fn get_visibility_mode(&self) -> VisibilityMode {
@@ -59,37 +91,49 @@ impl Hash for Area {
     }
 }
 
+impl PartialEq for Area {
+    fn eq(&self, other: &Self) -> bool {
+        if self.component_id() != other.component_id() {
+            return false;
+        }
+
+        let mut sorted_keys_self = self.nested_keys();
+        let mut sorted_keys_other = other.nested_keys();
+        sorted_keys_self.sort_unstable();
+        sorted_keys_other.sort_unstable();
+
+        sorted_keys_self == sorted_keys_other
+    }
+}
+
+impl Eq for Area {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::main_code::core::components::token::Token;
-    use crate::main_code::core::core_constants::ComponentType;
-
-    fn create_token_component(name: &str, id: usize) -> Component {
-        Component::new_with_id(ComponentType::Token(Token::new(name)), id)
-    }
-
-    fn create_area_component(id: usize, area: Area) -> Component {
-        Component::new_with_id(ComponentType::Area(area), id)
-    }
 
     #[test]
     fn test_put_components_and_clear() {
-        let component_1 = create_token_component("Meeple1", 1);
-        let component_2 = create_token_component("Meeple2", 2);
-        let component_3 = create_token_component("Meeple3", 3);
+        let c1 = Token::new_with_id("Meeple1", 1);
+        let c2 = Token::new_with_id("Meeple2", 2);
+        let c3 = Token::new_with_id("Meeple3", 3);
 
-        let mut area = Area::default();
-        area.put_components(vec![component_1.clone(),component_2.clone(), component_3.clone()]);
+        let mut area = Area::new_with_id(-1, 10);
+        area.put_components(vec![
+            Box::new(c1.clone()),
+            Box::new(c2.clone()),
+            Box::new(c3.clone()),
+        ]);
         assert_eq!(area.get_size(), 3);
 
-        let area_component_1 = area.get_component(1).unwrap();
-        let area_component_2 = area.get_component(2).unwrap();
-        let area_component_3 = area.get_component(3).unwrap();
+        let area_c1 = area.get_component(1).unwrap();
+        let area_c2 = area.get_component(2).unwrap();
+        let area_c3 = area.get_component(3).unwrap();
 
-        assert_eq!(component_1, *area_component_1);
-        assert_eq!(component_2, *area_component_2);
-        assert_eq!(component_3, *area_component_3);
+        assert_eq!(c1, *area_c1.downcast_ref::<Token>().unwrap());
+        assert_eq!(c2, *area_c2.downcast_ref::<Token>().unwrap());
+        assert_eq!(c3, *area_c3.downcast_ref::<Token>().unwrap());
 
         area.clear();
 
@@ -98,64 +142,77 @@ mod tests {
         assert!(area.get_component(3).is_none());
     }
 
-
     #[test]
     fn test_put_components_with_nested_components() {
-        let component_1 = create_token_component("Meeple1", 1);
-        let component_2 = create_token_component("Meeple2", 2);
-        let component_3 = create_token_component("Meeple3", 3);
-        let mut area_1 = Area::default();
-        area_1.put_components(vec![component_1.clone(),component_2.clone(), component_3.clone()]);
-        let comp_area_1 = create_area_component(10, area_1);
+        let c1 = Token::new_with_id("Meeple1", 1);
+        let c2 = Token::new_with_id("Meeple2", 2);
+        let c3 = Token::new_with_id("Meeple3", 3);
+        let mut a1 = Area::new_with_id(-1, 10);
+        a1.put_components(vec![
+            Box::new(c1.clone()),
+            Box::new(c2.clone()),
+            Box::new(c3.clone()),
+        ]);
 
-        let component_4 = create_token_component("Meeple4", 4);
-        let component_5 = create_token_component("Meeple5", 5);
-        let component_6 = create_token_component("Meeple6", 6);
-        let mut area_2 = Area::default();
-        area_2.put_components(vec![component_4.clone(),component_5.clone(), component_6.clone()]);
-        let comp_area_2 = create_area_component(20, area_2);
+        let c4 = Token::new_with_id("Meeple4", 4);
+        let c5 = Token::new_with_id("Meeple5", 5);
+        let c6 = Token::new_with_id("Meeple6", 6);
+        let mut a2 = Area::new_with_id(-1, 20);
+        a2.put_components(vec![
+            Box::new(c4.clone()),
+            Box::new(c5.clone()),
+            Box::new(c6.clone()),
+        ]);
 
-        let mut big_area = Area::default();
-        big_area.put_components(vec![comp_area_1.clone(), comp_area_2.clone()]);
-        assert_eq!(big_area.get_size(), 8);
+        let c7 = Token::new_with_id("Meeple7", 7);
+        let mut a3 = Area::new_with_id(-1, 30);
+        a3.put_components(vec![
+            Box::new(a1.clone()),
+            Box::new(a2.clone()),
+            Box::new(c7.clone()),
+        ]);
+        assert_eq!(a3.get_size(), 9);
 
-        let area_component_1 = big_area.get_component(1).unwrap();
-        let area_component_2 = big_area.get_component(2).unwrap();
-        let area_component_3 = big_area.get_component(3).unwrap();
-        let area_component_4 = big_area.get_component(4).unwrap();
-        let area_component_5 = big_area.get_component(5).unwrap();
-        let area_component_6 = big_area.get_component(6).unwrap();
+        let a3c1 = a3.get_component(1).unwrap();
+        let a3c2 = a3.get_component(2).unwrap();
+        let a3c3 = a3.get_component(3).unwrap();
+        let a3c4 = a3.get_component(4).unwrap();
+        let a3c5 = a3.get_component(5).unwrap();
+        let a3c6 = a3.get_component(6).unwrap();
 
-        assert_eq!(component_1, *area_component_1);
-        assert_eq!(component_2, *area_component_2);
-        assert_eq!(component_3, *area_component_3);
-        assert_eq!(component_4, *area_component_4);
-        assert_eq!(component_5, *area_component_5);
-        assert_eq!(component_6, *area_component_6);
+        assert_eq!(c1, *a3c1.downcast_ref::<Token>().unwrap());
+        assert_eq!(c2, *a3c2.downcast_ref::<Token>().unwrap());
+        assert_eq!(c3, *a3c3.downcast_ref::<Token>().unwrap());
+        assert_eq!(c4, *a3c4.downcast_ref::<Token>().unwrap());
+        assert_eq!(c5, *a3c5.downcast_ref::<Token>().unwrap());
+        assert_eq!(c6, *a3c6.downcast_ref::<Token>().unwrap());
 
-        if let ComponentType::Area(area) = big_area.get_component(10).unwrap().component_type(){
-            assert_eq!(area.get_size(), 3);
-            assert!(area.get_component(1).is_some());
-            assert!(area.get_component(2).is_some());
-            assert!(area.get_component(3).is_some());
-            assert!(area.get_component(4).is_none());
-            assert!(area.get_component(5).is_none());
-            assert!(area.get_component(6).is_none());
-        } else {
-            unreachable!("Area 1 does not exist")
-        }
+        let a3a1 = a3
+            .get_component(10)
+            .unwrap()
+            .downcast_ref::<Area>()
+            .unwrap()
+            .clone();
+        assert_eq!(a3a1.get_size(), 3);
+        assert!(a3a1.get_component(1).is_some());
+        assert!(a3a1.get_component(2).is_some());
+        assert!(a3a1.get_component(3).is_some());
+        assert!(a3a1.get_component(4).is_none());
+        assert!(a3a1.get_component(5).is_none());
+        assert!(a3a1.get_component(6).is_none());
 
-        if let ComponentType::Area(area) = big_area.get_component(20).unwrap().component_type(){
-            assert_eq!(area.get_size(), 3);
-            assert!(area.get_component(1).is_none());
-            assert!(area.get_component(2).is_none());
-            assert!(area.get_component(3).is_none());
-            assert!(area.get_component(4).is_some());
-            assert!(area.get_component(5).is_some());
-            assert!(area.get_component(6).is_some());
-        } else {
-            unreachable!("Area 2 does not exist")
-        }
+        let a3a2 = a3
+            .get_component(20)
+            .unwrap()
+            .downcast_ref::<Area>()
+            .unwrap()
+            .clone();
+        assert_eq!(a3a2.get_size(), 3);
+        assert!(a3a2.get_component(1).is_none());
+        assert!(a3a2.get_component(2).is_none());
+        assert!(a3a2.get_component(3).is_none());
+        assert!(a3a2.get_component(4).is_some());
+        assert!(a3a2.get_component(5).is_some());
+        assert!(a3a2.get_component(6).is_some());
     }
 }
-

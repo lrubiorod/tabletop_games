@@ -1,9 +1,8 @@
-use crate::main_code::core::{
-    core_constants::ComponentType, interfaces::component_container::ComponentContainer,
-};
+use crate::main_code::core::core_constants::ComponentType;
+use downcast_rs;
+use dyn_clone;
 use std::{
     fmt,
-    fmt::Formatter,
     hash::{Hash, Hasher},
     sync::atomic::{AtomicUsize, Ordering},
 };
@@ -11,8 +10,21 @@ use std::{
 // Atomic counter for unique component IDs
 static GLOBAL_ID: AtomicUsize = AtomicUsize::new(0);
 
-#[derive(Debug, Clone)]
-pub struct Component {
+pub trait Component: dyn_clone::DynClone + downcast_rs::Downcast {
+    fn component_id(&self) -> usize;
+    fn nested_components(&self) -> Vec<Box<dyn Component>>;
+}
+dyn_clone::clone_trait_object!(Component);
+downcast_rs::impl_downcast!(Component);
+
+impl fmt::Debug for dyn Component {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "[impl Component: {}]", self.component_id())
+    }
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct BaseComponent {
     // Unique ID for this component
     component_id: usize,
     // Type of this component
@@ -23,7 +35,7 @@ pub struct Component {
     component_name: String,
 }
 
-impl Component {
+impl BaseComponent {
     // Constructor that takes only the type (default name will be the type's string representation)
     pub fn new(component_type: ComponentType) -> Self {
         Self {
@@ -35,26 +47,26 @@ impl Component {
     }
 
     // Constructor that takes the type and name of the component
-    pub fn new_with_name(component_type: ComponentType, name: String) -> Self {
+    pub fn new_with_name(component_type: ComponentType, name: &str) -> Self {
         Self {
             component_id: GLOBAL_ID.fetch_add(1, Ordering::Relaxed),
             component_type,
             owner_id: -1,
-            component_name: name,
+            component_name: name.to_string(),
         }
     }
 
     // Constructor that takes type, name, and a specific component ID
     pub fn new_with_name_and_id(
         component_type: ComponentType,
-        name: String,
+        name: &str,
         component_id: usize,
     ) -> Self {
         Self {
             component_id,
             component_type,
             owner_id: -1,
-            component_name: name,
+            component_name: name.to_string(),
         }
     }
 
@@ -66,10 +78,6 @@ impl Component {
             component_type,
             owner_id: -1,
         }
-    }
-
-    pub fn component_id(&self) -> usize {
-        self.component_id
     }
 
     pub fn component_type(&self) -> ComponentType {
@@ -92,35 +100,38 @@ impl Component {
         self.component_name = name;
     }
 
-    pub fn copy_component_to(&self, mut copy_to: Component) {
+    pub fn copy_component_to(&self, mut copy_to: BaseComponent) {
         copy_to.owner_id = self.owner_id;
         copy_to.component_name = self.component_name.clone();
     }
+}
 
-    pub fn get_components(&self) -> Option<Vec<&Component>> {
-        match &self.component_type {
-            ComponentType::Area(area) => Some(area.get_components()),
-            _ => None,
-        }
+impl Component for BaseComponent {
+    fn component_id(&self) -> usize {
+        self.component_id
+    }
+
+    fn nested_components(&self) -> Vec<Box<dyn Component>> {
+        vec![]
     }
 }
 
-impl Hash for Component {
+impl Hash for BaseComponent {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.component_id.hash(state);
     }
 }
 
-impl fmt::Display for Component {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+impl fmt::Display for BaseComponent {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.component_type)
     }
 }
 
-impl PartialEq for Component {
+impl PartialEq for BaseComponent {
     fn eq(&self, other: &Self) -> bool {
         self.component_id == other.component_id
     }
 }
 
-impl Eq for Component {}
+impl Eq for BaseComponent {}

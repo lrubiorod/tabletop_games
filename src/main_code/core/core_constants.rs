@@ -1,19 +1,24 @@
-use crate::main_code::core::components::{area::Area, token::Token};
-use std::fmt::{Display, Formatter};
+use std::fmt;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub enum ComponentType {
-    Area(Area),
-    Token(Token),
+    Area,
+    Token,
 }
 
-impl Display for ComponentType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for ComponentType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::fmt::Result {
         let name = match self {
-            ComponentType::Area(_) => "Area",
-            ComponentType::Token(token) => token.token_type(),
+            ComponentType::Area => "Area",
+            ComponentType::Token => "Token",
         };
         write!(f, "{}", name)
+    }
+}
+
+impl Default for ComponentType {
+    fn default() -> Self {
+        ComponentType::Token
     }
 }
 
