@@ -1,13 +1,11 @@
-use std::fmt;
-
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub enum ComponentType {
     Area,
     Token,
 }
 
-impl fmt::Display for ComponentType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for ComponentType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let name = match self {
             ComponentType::Area => "Area",
             ComponentType::Token => "Token",
@@ -37,4 +35,35 @@ pub enum VisibilityMode {
     FirstVisibleToAll,
     LastVisibleToAll,
     MixedVisibility,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Hash)]
+pub enum GameResult {
+    WinGame,
+    WinRound,
+    DrawGame,
+    DrawRound,
+    LoseRound,
+    LoseGame,
+    Disqualify,
+    Timeout,
+    GameOngoing,
+    GameEnd,
+}
+
+impl GameResult {
+    pub fn value(&self) -> i8 {
+        match self {
+            GameResult::WinGame => 1,
+            GameResult::WinRound => 0,
+            GameResult::DrawGame => 0,
+            GameResult::DrawRound => 0,
+            GameResult::LoseRound => 0,
+            GameResult::LoseGame => -1,
+            GameResult::Disqualify => -2,
+            GameResult::Timeout => -3,
+            GameResult::GameOngoing => 0,
+            GameResult::GameEnd => 3,
+        }
+    }
 }
