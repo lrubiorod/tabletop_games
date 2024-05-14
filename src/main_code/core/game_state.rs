@@ -1,1 +1,3 @@
-pub trait GameState {}
+pub trait GameState {
+    fn current_player(&self) -> usize;
+}
