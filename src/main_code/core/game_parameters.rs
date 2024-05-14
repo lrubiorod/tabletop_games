@@ -3,20 +3,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-pub trait GameParameters {
-    fn random_seed(&self) -> u64;
-    fn max_rounds(&self) -> i32;
-    fn timeout_rounds(&self) -> i32;
-    fn thinking_time_mins(&self) -> i64;
-    fn increment_action_s(&self) -> i64;
-    fn increment_turn_s(&self) -> i64;
-    fn increment_round_s(&self) -> i64;
-    fn increment_milestone_s(&self) -> i64;
-    fn set_random_seed(&mut self, random_seed: u64);
-    fn set_max_rounds(&mut self, max_rounds: i32);
-    fn set_timeout_rounds(&mut self, timeout_rounds: i32);
-    fn set_thinking_time_mins(&mut self, thinking_time_mins: i64);
-}
+pub trait GameParameters {}
 
 pub struct AbstractParameters {
     random_seed: u64,
@@ -40,6 +27,31 @@ impl AbstractParameters {
             .expect("Time went backwards")
             .as_secs()
     }
+
+    pub fn random_seed(&self) -> u64 {
+        self.random_seed
+    }
+    pub fn max_rounds(&self) -> i32 {
+        self.max_rounds
+    }
+    pub fn timeout_rounds(&self) -> i32 {
+        self.timeout_rounds
+    }
+    pub fn thinking_time_mins(&self) -> i64 {
+        self.thinking_time_mins
+    }
+    pub fn increment_action_s(&self) -> i64 {
+        self.increment_action_s
+    }
+    pub fn increment_turn_s(&self) -> i64 {
+        self.increment_turn_s
+    }
+    pub fn increment_round_s(&self) -> i64 {
+        self.increment_round_s
+    }
+    pub fn increment_milestone_s(&self) -> i64 {
+        self.increment_milestone_s
+    }
 }
 
 impl Default for AbstractParameters {
@@ -57,49 +69,13 @@ impl Default for AbstractParameters {
     }
 }
 
-impl GameParameters for AbstractParameters {
-    fn random_seed(&self) -> u64 {
-        self.random_seed
-    }
-    fn max_rounds(&self) -> i32 {
-        self.max_rounds
-    }
-    fn timeout_rounds(&self) -> i32 {
-        self.timeout_rounds
-    }
-    fn thinking_time_mins(&self) -> i64 {
-        self.thinking_time_mins
-    }
-    fn increment_action_s(&self) -> i64 {
-        self.increment_action_s
-    }
-    fn increment_turn_s(&self) -> i64 {
-        self.increment_turn_s
-    }
-    fn increment_round_s(&self) -> i64 {
-        self.increment_round_s
-    }
-    fn increment_milestone_s(&self) -> i64 {
-        self.increment_milestone_s
-    }
+impl GameParameters for AbstractParameters {}
 
-    fn set_random_seed(&mut self, random_seed: u64) {
-        self.random_seed = random_seed;
-    }
-
-    fn set_max_rounds(&mut self, max_rounds: i32) {
-        self.max_rounds = max_rounds;
-    }
-
-    fn set_timeout_rounds(&mut self, timeout_rounds: i32) {
-        self.timeout_rounds = timeout_rounds;
-    }
-
-    fn set_thinking_time_mins(&mut self, thinking_time_mins: i64) {
-        self.thinking_time_mins = thinking_time_mins;
-    }
-}
-
+/**
+ * Clone this game parameter object.
+ *
+ * @return - new object with the same parameters, but a new random seed.
+ */
 impl Clone for AbstractParameters {
     fn clone(&self) -> Self {
         Self {
