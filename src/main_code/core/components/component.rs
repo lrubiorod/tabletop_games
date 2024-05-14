@@ -99,11 +99,6 @@ impl BaseComponent {
     pub fn set_component_name(&mut self, name: String) {
         self.component_name = name;
     }
-
-    pub fn copy_component_to(&self, mut copy_to: BaseComponent) {
-        copy_to.owner_id = self.owner_id;
-        copy_to.component_name = self.component_name.clone();
-    }
 }
 
 impl Component for BaseComponent {
@@ -135,3 +130,17 @@ impl PartialEq for BaseComponent {
 }
 
 impl Eq for BaseComponent {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_different_ids() {
+        let t1 = BaseComponent::new(ComponentType::Token);
+        assert_eq!(t1.component_id(), 0);
+        let t2 = BaseComponent::new(ComponentType::Token);
+        assert_eq!(t2.component_id(), 1);
+        assert_ne!(t1, t2);
+    }
+}
