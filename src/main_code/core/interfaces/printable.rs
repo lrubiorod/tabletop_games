@@ -7,7 +7,7 @@ pub trait IPrintable<TGameState: GameState>: fmt::Display + fmt::Debug {
      * @param gameState - game state provided for context.
      * @return - short String
      */
-    fn get_string(&self, game_state: TGameState) -> String {
+    fn get_string(&self, _game_state: TGameState) -> String {
         self.to_string()
     }
 
