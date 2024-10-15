@@ -1,7 +1,4 @@
-use crate::main_code::core::{
-    actions::action::Action,
-    game_state::GameState
-};
+use crate::main_code::core::{actions::action::Action, game_state::GameState};
 
 pub trait ExtendedSequence {
     /// Returns a list of available actions for the current player

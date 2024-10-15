@@ -1,6 +1,5 @@
 use crate::main_code::core::{actions::action::Action, game_state::GameState, player::Player};
-use rand::prelude::ThreadRng;
-use rand::Rng;
+use rand::{prelude::ThreadRng, Rng};
 
 #[derive(Clone)]
 pub struct RandomPlayer {

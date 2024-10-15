@@ -1,8 +1,5 @@
-use std::{
-    collections::HashSet,
-    hash::Hash
-};
 use crate::main_code::core::game_state::GameState;
+use std::{collections::HashSet, hash::Hash};
 
 pub trait Action: dyn_clone::DynClone + downcast_rs::Downcast {
     /// Executes this action, applying its effect to the given game state.
@@ -20,7 +17,11 @@ pub trait Action: dyn_clone::DynClone + downcast_rs::Downcast {
     }
 
     /// Returns the string representation of this action considering a set of perspective players.
-    fn get_string_perspectives(&self, gs: &Box<dyn GameState>, perspective_set: &HashSet<i8>) -> String {
+    fn get_string_perspectives(
+        &self,
+        gs: &Box<dyn GameState>,
+        perspective_set: &HashSet<i8>,
+    ) -> String {
         let current_player = gs.current_player();
         let perspective = if perspective_set.contains(&current_player) {
             current_player

@@ -1,7 +1,4 @@
-use crate::main_code::core::actions::action::Action;
-use crate::main_code::core::game_state::GameState;
-use rand::prelude::ThreadRng;
-use rand::Rng;
+use crate::main_code::core::{actions::action::Action, game_state::GameState};
 
 pub trait Player: dyn_clone::DynClone {
     fn next_action(

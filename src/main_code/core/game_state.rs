@@ -1,11 +1,10 @@
-use std::collections::VecDeque;
-use crate::{
-    main_code::core::game_parameters::GameParameters,
+use crate::main_code::core::{
+    game_parameters::GameParameters,
+    interfaces::{action_type::ActionType, extended_sequence::ExtendedSequence},
 };
+use std::collections::VecDeque;
 
 use rand::rngs::ThreadRng;
-use crate::main_code::core::interfaces::action_type::ActionType;
-use crate::main_code::core::interfaces::extended_sequence::ExtendedSequence;
 
 pub trait GameState {
     /// Determines the current player by checking if there are actions in progress
@@ -47,13 +46,11 @@ pub struct AbstractGameState {
 impl AbstractGameState {
     /// Constructor for AbstractGameState
     pub fn new(game_parameters: Box<dyn GameParameters>, n_players: u8) -> Self {
-
         let mut player_actions_available = Vec::with_capacity(n_players as usize);
 
         for _ in 0..n_players {
             player_actions_available.push(Vec::new());
         }
-
 
         AbstractGameState {
             n_players,
