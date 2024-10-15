@@ -1,56 +1,70 @@
-use crate::main_code::core::{game_state::GameState, interfaces::printable::IPrintable};
-use std::collections::HashSet;
+use std::{
+    collections::HashSet,
+    hash::Hash
+};
+use crate::main_code::core::game_state::GameState;
 
-pub trait Action<TGameState: GameState>: IPrintable<TGameState> + Copy {
-    /**
-     * Executes this action, applying its effect to the given game state. Can access any component IDs stored
-     * through the AbstractGameState.getComponentById(int id) method.
-     *
-     * @param gs - game state which should be modified by this action.
-     * @return - true if successfully executed, false otherwise.
-     */
-    fn execute(&self, gs: TGameState) -> bool;
-
-    /**
-     * Returns the string representation of this action from the perspective of the given player.
-     * @param gs - game state to be used to generate the string.
-     *
-     *  May optionally be implemented if Actions are not fully visible
-     *  The only impact this has is in the GUI, to avoid this giving too much information to the player.
-     *
-     * @param perspectivePlayer - player to whom the action should be represented.
-     * @return - string representation of this action.
-     */
-    fn get_string_with_perspective(
-        &self,
-        game_state: TGameState,
-        _perspective_player: usize,
-    ) -> String {
-        self.get_string(game_state)
+pub trait Action: dyn_clone::DynClone + downcast_rs::Downcast {
+    /// Executes this action, applying its effect to the given game state.
+    fn execute(&self, _gs: &mut Box<dyn GameState>) -> bool {
+        false
     }
 
-    /**
-     * The GUI formally supports multiple players viewing a game. This in practice is only going to be used
-     * for games with (near) perfect information. For games that actually implement hidden information in
-     * a move (Resistance, Hanabi, Sushi Go, etc), we will only need the game actions to implement
-     * getString(AbstractGameState, int). This is a helper method to make this downstream imnplementation
-     * easier without trying to puzzle out what it means to have multiple players viewing a game with hidden information.
-     *
-     * @param gs
-     * @param perspectiveSet
-     * @return
-     */
-    fn get_string_with_perspective_set(
-        &self,
-        game_state: TGameState,
-        perspective_set: &HashSet<usize>,
-    ) -> String {
-        let current_player = game_state.current_player();
+    /// Returns the string representation of this action.
+    fn get_string(&self, gs: &Box<dyn GameState>) -> String;
+
+    /// Returns the string representation of this action from the perspective of a specific player.
+    fn get_string_perspective(&self, gs: &Box<dyn GameState>, _perspective_player: i8) -> String {
+        // TODO: Show a string with perspective
+        self.get_string(gs)
+    }
+
+    /// Returns the string representation of this action considering a set of perspective players.
+    fn get_string_perspectives(&self, gs: &Box<dyn GameState>, perspective_set: &HashSet<i8>) -> String {
+        let current_player = gs.current_player();
         let perspective = if perspective_set.contains(&current_player) {
             current_player
         } else {
             *perspective_set.iter().next().unwrap_or(&current_player)
         };
-        self.get_string_with_perspective(game_state, perspective)
+        self.get_string_perspective(gs, perspective)
+    }
+
+    /// Returns a tooltip for the GUI representation of the action.
+    fn get_tooltip(&self, _gs: &Box<dyn GameState>) -> String {
+        String::from("")
+    }
+
+    /// Returns the ID of the action.
+    fn id(&self) -> i32;
+}
+dyn_clone::clone_trait_object!(Action);
+downcast_rs::impl_downcast!(Action);
+
+#[derive(Copy, Clone, PartialEq, Hash)]
+pub struct AbstractAction {
+    id: i32,
+}
+
+impl AbstractAction {
+    pub fn new() -> Self {
+        Self {
+            // TODO: use ExtendedGLU
+            id: 0,
+        }
+    }
+
+    pub fn with_id(id: i32) -> Self {
+        Self { id }
+    }
+}
+
+impl Action for AbstractAction {
+    fn get_string(&self, _gs: &Box<dyn GameState>) -> String {
+        format!("Action with ID: {}", self.id)
+    }
+
+    fn id(&self) -> i32 {
+        self.id
     }
 }
