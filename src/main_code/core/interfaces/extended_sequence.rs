@@ -8,7 +8,7 @@ pub trait ExtendedSequence {
     fn current_player(&self, state: &Box<dyn GameState>) -> i8;
 
     /// Called after an action has been executed
-    fn after_action(&mut self, state: &Box<dyn GameState>, action: &Box<dyn Action>) {}
+    fn after_action(&mut self, _state: &Box<dyn GameState>, _action: &Box<dyn Action>) {}
 
     /// Called when a child action in the sequence has been executed
     fn child_executed(&mut self, _state: &Box<dyn GameState>, _action: &dyn Spawnable) {}
