@@ -4,5 +4,6 @@ pub mod core_constants;
 pub mod game;
 pub mod game_parameters;
 pub mod game_state;
+pub mod glu;
 pub mod interfaces;
 pub mod player;
