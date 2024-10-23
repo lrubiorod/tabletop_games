@@ -1,4 +1,11 @@
-use crate::main_code::core::game_state::GameState;
+use crate::{
+    main_code::{
+        core::{
+            game_state::GameState,
+            glu::glu::GLU
+        }
+    }
+};
 use std::{collections::HashSet, hash::Hash};
 
 pub trait Action: dyn_clone::DynClone + downcast_rs::Downcast {
@@ -49,10 +56,7 @@ pub struct AbstractAction {
 
 impl AbstractAction {
     pub fn new() -> Self {
-        Self {
-            // TODO: use ExtendedGLU
-            id: 0,
-        }
+        Self { id: GLU::next_id() }
     }
 
     pub fn with_id(id: i32) -> Self {
