@@ -15,10 +15,10 @@ pub trait Action: dyn_clone::DynClone + downcast_rs::Downcast {
     }
 
     /// Returns the string representation of this action.
-    fn get_string(&self, gs: &Box<dyn GameState>) -> String;
+    fn get_string(&self, gs: &dyn GameState) -> String;
 
     /// Returns the string representation of this action from the perspective of a specific player.
-    fn get_string_perspective(&self, gs: &Box<dyn GameState>, _perspective_player: i8) -> String {
+    fn get_string_perspective(&self, gs: &dyn GameState, _perspective_player: i8) -> String {
         // TODO: Show a string with perspective
         self.get_string(gs)
     }
@@ -26,7 +26,7 @@ pub trait Action: dyn_clone::DynClone + downcast_rs::Downcast {
     /// Returns the string representation of this action considering a set of perspective players.
     fn get_string_perspectives(
         &self,
-        gs: &Box<dyn GameState>,
+        gs: &dyn GameState,
         perspective_set: &HashSet<i8>,
     ) -> String {
         let current_player = gs.current_player();
@@ -65,7 +65,7 @@ impl AbstractAction {
 }
 
 impl Action for AbstractAction {
-    fn get_string(&self, _gs: &Box<dyn GameState>) -> String {
+    fn get_string(&self, _gs: &dyn GameState) -> String {
         format!("Action with ID: {}", self.id)
     }
 

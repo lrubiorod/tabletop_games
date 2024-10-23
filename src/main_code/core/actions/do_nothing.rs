@@ -22,7 +22,7 @@ impl Action for DoNothing {
         true
     }
 
-    fn get_string(&self, _gs: &Box<dyn GameState>) -> String {
+    fn get_string(&self, _gs: &dyn GameState) -> String {
         "DoNothing".to_string()
     }
 
