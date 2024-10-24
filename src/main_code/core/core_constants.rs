@@ -67,3 +67,9 @@ impl GameResult {
         }
     }
 }
+
+impl Default for GameResult {
+    fn default() -> Self {
+        GameResult::GameOngoing
+    }
+}

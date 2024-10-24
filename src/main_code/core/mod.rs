@@ -1,6 +1,7 @@
 pub mod actions;
 pub mod components;
 pub mod core_constants;
+pub mod forward_model;
 pub mod game;
 pub mod game_parameters;
 pub mod game_state;

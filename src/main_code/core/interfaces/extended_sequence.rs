@@ -14,7 +14,7 @@ pub trait ExtendedSequence {
     fn child_executed(&mut self, _state: &Box<dyn GameState>, _action: &dyn Spawnable) {}
 
     /// Checks if the extended sequence has been completed
-    fn execution_complete(&mut self, state: &Box<dyn GameState>) -> bool {
+    fn execution_complete(&self, state: &Box<dyn GameState>) -> bool {
         if self.is_execution_complete(state) {
             self.finalize(state);
             true
@@ -24,7 +24,7 @@ pub trait ExtendedSequence {
     }
 
     /// Finalizes the sequence, performing cleanup as necessary
-    fn finalize(&mut self, state: &Box<dyn GameState>) {
+    fn finalize(&self, state: &Box<dyn GameState>) {
         // TODO: state.remove_glu_in_progress(self.id());
         if let Some(spawnable) = self.as_spawnable() {
             spawnable.notify_completion(state);

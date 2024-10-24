@@ -1,4 +1,5 @@
 use crate::main_code::core::{
+    actions::action::Action,
     game_state::GameState,
     glu::{extended_glu::ExtendedGluTrait, glu::GluTrait},
 };
@@ -61,18 +62,20 @@ impl ExtendedGluTrait for ExtendedGLUType {
         _parent_id: Option<usize>,
     ) -> bool {
         match self {
-            _ => false,
+            ExtendedGLUType::Default => false,
         }
     }
 
     fn can_execute(&self, _game_state: &Box<dyn GameState>, _player_id: usize) -> bool {
         match self {
-            _ => false,
+            ExtendedGLUType::Default => false,
         }
     }
 
-    fn current_player(&self, _state: &Box<dyn GameState>) -> i8 {
-        -1
+    fn compute_available_actions(&self, _game_state: &Box<dyn GameState>) -> Vec<Box<dyn Action>> {
+        match self {
+            ExtendedGLUType::Default => vec![],
+        }
     }
 }
 

@@ -1,3 +1,4 @@
+use crate::main_code::core::actions::action::Action;
 use crate::main_code::core::{
     game_state::GameState,
     glu::{glu::GLU, glu_type::ExtendedGLUType},
@@ -29,6 +30,18 @@ impl ExtendedGLU {
     pub fn get_type(&self) -> ExtendedGLUType {
         self.glu_type.clone()
     }
+
+    pub fn execution_completed(&self) -> bool {
+        self.complete
+    }
+
+    pub fn current_player(&self) -> i8 {
+        self.player_id
+    }
+
+    pub fn parent_id(&self) -> i32 {
+        self.parent_id
+    }
 }
 
 pub trait ExtendedGluTrait {
@@ -40,7 +53,7 @@ pub trait ExtendedGluTrait {
     ) -> bool;
     fn can_execute(&self, game_state: &Box<dyn GameState>, player_id: usize) -> bool;
 
-    fn current_player(&self, state: &Box<dyn GameState>) -> i8;
+    fn compute_available_actions(&self, game_state: &Box<dyn GameState>) -> Vec<Box<dyn Action>>;
 }
 
 impl ExtendedGluTrait for ExtendedGLU {
@@ -57,7 +70,7 @@ impl ExtendedGluTrait for ExtendedGLU {
         self.glu_type.can_execute(game_state, player_id)
     }
 
-    fn current_player(&self, _state: &Box<dyn GameState>) -> i8 {
-        self.player_id
+    fn compute_available_actions(&self, game_state: &Box<dyn GameState>) -> Vec<Box<dyn Action>> {
+        self.glu_type.compute_available_actions(game_state)
     }
 }
